@@ -53,8 +53,19 @@ header h1 {
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
 header p { font-size:13px; color:var(--text2); margin-top:2px; }
-.header-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+.header-right { margin-left:auto; display:flex; align-items:center; gap:16px; }
 .start-time-wrap { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text2); }
+.woolton-badge {
+  display:flex; align-items:center; gap:8px;
+  padding:7px 14px; border-radius:20px;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
+  text-decoration:none; transition:background .2s, border-color .2s;
+}
+.woolton-badge:hover { background:rgba(0,230,118,.1); border-color:rgba(0,230,118,.35); }
+.woolton-badge-icon { font-size:18px; line-height:1; }
+.woolton-badge-text { display:flex; flex-direction:column; line-height:1.25; }
+.woolton-badge-text span:first-child { font-size:10px; color:var(--text2); letter-spacing:.5px; text-transform:uppercase; }
+.woolton-badge-text span:last-child  { font-size:13px; font-weight:700; color:var(--text); }
 input[type=time] {
   background:var(--surface2); border:1px solid var(--border); border-radius:8px;
   color:var(--text); padding:6px 10px; font-size:14px; font-family:inherit; outline:none;
@@ -184,6 +195,13 @@ input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.25); }
       <span>Kick-off</span>
       <input type="time" id="startTime" value="09:00">
     </div>
+    <a class="woolton-badge" href="https://www.wooltonfc.co.uk/" target="_blank" rel="noopener" title="Visit Woolton FC">
+      <span class="woolton-badge-icon">⚽</span>
+      <span class="woolton-badge-text">
+        <span>Developed with</span>
+        <span>Woolton FC</span>
+      </span>
+    </a>
   </div>
 </header>
 
