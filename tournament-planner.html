@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚽ Tournament Planner</title>
+<style>
+:root {
+  --bg: #0b0f1a;
+  --surface: rgba(255,255,255,0.04);
+  --surface2: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.09);
+  --green: #00e676;
+  --green-dim: #00c853;
+  --teal: #1de9b6;
+  --blue: #448aff;
+  --orange: #ff9100;
+  --purple: #e040fb;
+  --red: #ff5252;
+  --yellow: #ffd740;
+  --text: #eceff1;
+  --text2: #90a4ae;
+  --r: 14px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 10% 60%, rgba(0,150,80,.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 90% 20%, rgba(30,80,200,.1) 0%, transparent 70%);
+}
+
+/* ── Header ── */
+header {
+  position:relative; z-index:1;
+  display:flex; align-items:center; gap:20px;
+  padding:20px 32px;
+  border-bottom:1px solid var(--border);
+  background:rgba(0,0,0,.25);
+  backdrop-filter:blur(12px);
+}
+.logo-pitch { width:52px; height:36px; flex-shrink:0; }
+header h1 {
+  font-size:26px; font-weight:800; letter-spacing:-.5px;
+  background:linear-gradient(135deg,var(--green),var(--teal));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+header p { font-size:13px; color:var(--text2); margin-top:2px; }
+.header-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+.start-time-wrap { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text2); }
+input[type=time] {
+  background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+  color:var(--text); padding:6px 10px; font-size:14px; font-family:inherit; outline:none;
+}
+
+/* ── Layout ── */
+.app { position:relative; z-index:1; display:grid; grid-template-columns:300px 1fr; gap:20px; padding:20px 32px 32px; max-width:1440px; margin:0 auto; }
+
+/* ── Panel ── */
+.panel {
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r);
+  padding:18px; backdrop-filter:blur(8px);
+}
+.panel-title {
+  font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px;
+  color:var(--text2); margin-bottom:16px; display:flex; align-items:center; gap:6px;
+}
+.panel-title span { font-size:14px; }
+
+/* ── Sliders ── */
+.control { margin-bottom:18px; }
+.ctrl-label { display:flex; justify-content:space-between; margin-bottom:7px; font-size:13px; }
+.ctrl-val { font-weight:700; color:var(--green); font-size:15px; }
+input[type=range] {
+  -webkit-appearance:none; width:100%; height:4px; border-radius:4px; outline:none;
+  background:linear-gradient(to right, var(--green-dim) var(--pct,0%), rgba(255,255,255,.12) var(--pct,0%));
+  cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+  background:var(--green); box-shadow:0 0 8px rgba(0,230,118,.6);
+  transition:transform .15s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.25); }
+
+/* ── Stats cards ── */
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+.stat {
+  background:var(--surface2); border:1px solid var(--border); border-radius:12px;
+  padding:14px 14px 12px; position:relative; overflow:hidden;
+}
+.stat::after { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--accent,var(--green)); border-radius:2px 0 0 2px; }
+.stat-lbl { font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:.6px; margin-bottom:5px; }
+.stat-val { font-size:22px; font-weight:800; line-height:1; }
+.stat-sub { font-size:11px; color:var(--text2); margin-top:3px; }
+
+/* ── Right column ── */
+.right { display:flex; flex-direction:column; gap:16px; }
+
+/* ── Timeline SVG container ── */
+#timeline-wrap { width:100%; overflow:hidden; }
+#timeline { width:100%; }
+
+/* ── Pitch grid ── */
+#pitch-grid-wrap { display:flex; flex-wrap:wrap; gap:8px; padding-top:4px; }
+
+/* ── Phase table ── */
+.phase-table { width:100%; border-collapse:collapse; font-size:13px; }
+.phase-table th { color:var(--text2); font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:.6px; padding:6px 10px; text-align:left; border-bottom:1px solid var(--border); }
+.phase-table td { padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.04); }
+.phase-table tr:last-child td { border-bottom:none; }
+.badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
+
+/* ── Bracket preview ── */
+#bracket-svg { width:100%; }
+
+/* ── Group chips ── */
+.group-chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.chip { padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+
+/* ── Divider ── */
+.divider { height:1px; background:var(--border); margin:14px 0; }
+
+/* ── Pitch SVG ── */
+.mini-pitch { border-radius:8px; overflow:hidden; }
+
+/* ── Chip buttons (tpg / spots selectors) ── */
+.chip-btn {
+  padding:5px 14px; border-radius:20px; font-size:13px; font-family:inherit;
+  cursor:pointer; transition:all .15s;
+  border:1px solid var(--border); background:var(--surface2); color:var(--text2);
+}
+.chip-btn.active {
+  border-color:var(--green); background:rgba(0,230,118,.13);
+  color:var(--green); font-weight:700;
+}
+.chip-btn:hover:not(.active) { border-color:rgba(255,255,255,.25); color:var(--text); }
+
+/* ── Footer note ── */
+.note { font-size:11px; color:var(--text2); margin-top:6px; line-height:1.5; }
+
+/* ── Tooltip ── */
+#tooltip {
+  position:fixed; background:rgba(10,14,26,.95); border:1px solid var(--border);
+  border-radius:8px; padding:8px 12px; font-size:12px; pointer-events:none;
+  display:none; z-index:100; backdrop-filter:blur(8px);
+}
+</style>
+</head>
+<body>
+
+<div id="tooltip"></div>
+
+<header>
+  <!-- Decorative pitch in header -->
+  <svg class="logo-pitch" viewBox="0 0 105 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="105" height="68" rx="4" fill="#1a5c2a"/>
+    <rect x="1" y="1" width="103" height="66" rx="3" fill="none" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+    <line x1="52.5" y1="1" x2="52.5" y2="67" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+    <circle cx="52.5" cy="34" r="9" stroke="rgba(255,255,255,.6)" stroke-width=".8" fill="none"/>
+    <circle cx="52.5" cy="34" r="1" fill="rgba(255,255,255,.8)"/>
+    <rect x="1" y="20" width="16" height="28" stroke="rgba(255,255,255,.6)" stroke-width=".8" fill="none"/>
+    <rect x="1" y="27" width="6" height="14" stroke="rgba(255,255,255,.6)" stroke-width=".8" fill="none"/>
+    <rect x="88" y="20" width="16" height="28" stroke="rgba(255,255,255,.6)" stroke-width=".8" fill="none"/>
+    <rect x="99" y="27" width="6" height="14" stroke="rgba(255,255,255,.6)" stroke-width=".8" fill="none"/>
+    <circle cx="10" cy="34" r="3" stroke="rgba(255,255,255,.4)" stroke-width=".6" fill="none"/>
+    <circle cx="95" cy="34" r="3" stroke="rgba(255,255,255,.4)" stroke-width=".6" fill="none"/>
+    <line x1="1" y1="34" x2="7" y2="34" stroke="rgba(255,255,255,.3)" stroke-width=".5"/>
+    <line x1="98" y1="34" x2="104" y2="34" stroke="rgba(255,255,255,.3)" stroke-width=".5"/>
+  </svg>
+  <div>
+    <h1>Tournament Planner</h1>
+    <p>Youth football — group stages &amp; knockout scheduling</p>
+  </div>
+  <div class="header-right">
+    <div class="start-time-wrap">
+      <span>Kick-off</span>
+      <input type="time" id="startTime" value="09:00">
+    </div>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- ── Left: Controls ── -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <div class="panel">
+      <div class="panel-title"><span>⚙️</span> Configuration</div>
+
+      <div class="control">
+        <div class="ctrl-label"><span>Number of teams</span><span class="ctrl-val" id="v-teams">24</span></div>
+        <input type="range" id="r-teams" min="8" max="64" step="2" value="24" oninput="sync('teams',this)">
+      </div>
+
+      <div class="control">
+        <div class="ctrl-label"><span>Number of pitches</span><span class="ctrl-val" id="v-pitches">6</span></div>
+        <input type="range" id="r-pitches" min="1" max="16" step="1" value="6" oninput="sync('pitches',this)">
+      </div>
+
+      <div class="control">
+        <div class="ctrl-label"><span>Teams per group</span><span class="ctrl-val" id="v-tpg">6</span></div>
+        <div id="tpg-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;"></div>
+      </div>
+
+      <div class="control">
+        <div class="ctrl-label"><span>Knockout phase structure</span><span class="ctrl-val" id="v-spots"></span></div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:7px">Teams per bracket band — sets how many concurrent knockout phases run</div>
+        <div id="spots-chips" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        <div id="bracket-preview" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="control">
+        <div class="ctrl-label"><span>Match length</span><span class="ctrl-val" id="v-match">12 min</span></div>
+        <input type="range" id="r-match" min="5" max="30" step="1" value="12" oninput="sync('match',this)">
+      </div>
+
+      <div class="control">
+        <div class="ctrl-label"><span>Break between matches</span><span class="ctrl-val" id="v-break">3 min</span></div>
+        <input type="range" id="r-break" min="1" max="15" step="1" value="3" oninput="sync('break',this)">
+      </div>
+
+      <div class="control" style="margin-bottom:0">
+        <div class="ctrl-label"><span>Extra break between KO rounds</span><span class="ctrl-val" id="v-extra">13 min</span></div>
+        <input type="range" id="r-extra" min="5" max="30" step="1" value="13" oninput="sync('extra',this)">
+      </div>
+    </div>
+
+    <!-- Group structure info -->
+    <div class="panel" id="structure-panel">
+      <div class="panel-title"><span>🏆</span> Structure</div>
+      <div id="structure-text"></div>
+    </div>
+
+    <!-- Refs -->
+    <div class="panel">
+      <div class="panel-title"><span>🦺</span> Referees</div>
+      <div id="refs-text"></div>
+    </div>
+
+  </div>
+
+  <!-- ── Right: Visualisations ── -->
+  <div class="right">
+
+    <!-- Stat cards -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat" style="--accent:var(--green)"><div class="stat-lbl">Total Time</div><div class="stat-val" id="s-total">—</div><div class="stat-sub" id="s-total-sub"></div></div>
+      <div class="stat" style="--accent:var(--blue)"><div class="stat-lbl">Total Games</div><div class="stat-val" id="s-games">—</div><div class="stat-sub" id="s-games-sub"></div></div>
+      <div class="stat" style="--accent:var(--orange)"><div class="stat-lbl">Group Stage</div><div class="stat-val" id="s-group">—</div><div class="stat-sub" id="s-group-sub"></div></div>
+      <div class="stat" style="--accent:var(--purple)"><div class="stat-lbl">Knockout</div><div class="stat-val" id="s-ko">—</div><div class="stat-sub" id="s-ko-sub"></div></div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="panel">
+      <div class="panel-title"><span>⏱</span> Schedule Timeline</div>
+      <div id="timeline-wrap">
+        <svg id="timeline" height="120"></svg>
+      </div>
+      <div class="note" id="timeline-note"></div>
+    </div>
+
+    <!-- Pitch allocation map -->
+    <div class="panel">
+      <div class="panel-title"><span>🟩</span> Pitch Allocation Map</div>
+      <div class="note" style="margin-bottom:10px">Each row = one pitch · each column = one time slot · colour = group / knockout round</div>
+      <div id="pitch-map-wrap" style="overflow-x:auto;">
+        <svg id="pitch-map"></svg>
+      </div>
+    </div>
+
+    <!-- Two columns: phase breakdown + mini pitch diagram -->
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:16px;">
+
+      <div class="panel">
+        <div class="panel-title"><span>📋</span> Phase Breakdown</div>
+        <table class="phase-table" id="phase-table"></table>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>⚽</span> Pitch Diagram</div>
+        <div id="pitch-format-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+        <svg id="pitch-diagram" viewBox="0 0 210 136" style="width:100%;border-radius:8px;"></svg>
+        <div class="note" style="margin-top:10px" id="pitch-dims"></div>
+      </div>
+
+    </div>
+
+    <!-- Bracket preview -->
+    <div class="panel">
+      <div class="panel-title"><span>🗂</span> Knockout Bracket Preview</div>
+      <div style="overflow-x:auto;"><svg id="bracket-svg"></svg></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+const state = { teams:24, pitches:6, tpg:6, spots:2, match:12, break:3, extra:13, pitchFormat:7 };
+
+const GROUP_COLOURS = ['#00c853','#448aff','#ff9100','#e040fb','#ff5252','#ffd740','#1de9b6','#80deea'];
+const KO_COLOURS   = { qf:'#ff6d00', sf:'#d500f9', final:'#ffd600' };
+const PHASE_LABELS = { group:'Group stage', qf:'Quarter-finals', sf:'Semi-finals', final:'Finals' };
+
+// ── Helpers ────────────────────────────────────────────
+function fmtMin(m) {
+  const h = Math.floor(m/60), mn = m%60;
+  return h ? `${h}h ${mn > 0 ? mn+'m' : ''}`.trim() : `${mn}m`;
+}
+function addMinutes(timeStr, mins) {
+  const [h,m] = timeStr.split(':').map(Number);
+  const total = h*60 + m + mins;
+  const nh = Math.floor(total/60)%24, nm = total%60;
+  return `${String(nh).padStart(2,'0')}:${String(nm).padStart(2,'0')}`;
+}
+function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
+
+// ── Slider sync ────────────────────────────────────────
+function sync(key, el) {
+  state[key] = +el.value;
+  const suffix = (key==='match'||key==='break'||key==='extra') ? ' min' : '';
+  document.getElementById('v-'+key).textContent = el.value + suffix;
+  updateSliderFill(el);
+  if (key === 'teams') updateTpgChips(); // valid group sizes depend on team count
+  render();
+}
+function updateSliderFill(el) {
+  const pct = ((el.value - el.min)/(el.max - el.min)*100).toFixed(1)+'%';
+  el.style.setProperty('--pct', pct);
+}
+document.querySelectorAll('input[type=range]').forEach(updateSliderFill);
+document.getElementById('startTime').addEventListener('change', render);
+
+// ── Chip selectors (teams per group / knockout spots) ───
+function getValidTpg(teams) {
+  // Exact divisors of teams in range [2, teams-1]
+  const valid = [];
+  for (let i = 2; i < teams; i++) {
+    if (teams % i === 0) valid.push(i);
+  }
+  return valid.length ? valid : [2];
+}
+
+function getValidSpots(tpg) {
+  // Valid band sizes = divisors of tpg (each band fills exactly one bracket)
+  const valid = [];
+  for (let i = 1; i <= tpg; i++) {
+    if (tpg % i === 0) valid.push(i);
+  }
+  return valid;
+}
+
+function snapToNearest(val, arr) {
+  if (arr.includes(val)) return val;
+  return arr.reduce((best, v) =>
+    Math.abs(v - val) < Math.abs(best - val) ? v : best, arr[0]);
+}
+
+function updateTpgChips() {
+  const valid = getValidTpg(state.teams);
+  state.tpg = snapToNearest(state.tpg, valid);
+  document.getElementById('v-tpg').textContent = state.tpg;
+  document.getElementById('tpg-chips').innerHTML = valid.map(v =>
+    `<button class="chip-btn${v === state.tpg ? ' active' : ''}" onclick="setTpg(${v})">${v}</button>`
+  ).join('');
+  updateSpotsChips(); // spots options depend on tpg
+}
+
+function updateSpotsChips() {
+  const valid = getValidSpots(state.tpg);
+  state.spots = snapToNearest(state.spots, valid);
+
+  const groups = Math.max(1, Math.round(state.teams / state.tpg));
+  const BRACKET_NAMES = 'EFGHIJKLMN';
+  const BRACKET_ICONS = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+
+  // Chips row — show band size + resulting bracket count
+  document.getElementById('spots-chips').innerHTML = valid.map(v => {
+    const phases = state.tpg / v;
+    const desc = phases === 1 ? '1 phase' : `${phases} phases`;
+    return `<button class="chip-btn${v === state.spots ? ' active' : ''}" onclick="setSpots(${v})"
+      style="display:flex;flex-direction:column;align-items:center;padding:6px 12px;line-height:1.3">
+      <span style="font-size:14px;font-weight:700">${v}</span>
+      <span style="font-size:10px;opacity:.7">${desc}</span>
+    </button>`;
+  }).join('');
+
+  // Bracket structure preview
+  const band    = state.spots;
+  const phases  = state.tpg / band;
+  const tPerBkt = groups * band;
+  const rows    = Array.from({length: phases}, (_, b) => {
+    const posStart = b * band + 1;
+    const posEnd   = (b + 1) * band;
+    const posLabel = posStart === posEnd ? `${posStart}` : `${posStart}–${posEnd}`;
+    const icon     = BRACKET_ICONS[b] || `${b+1}.`;
+    const name     = BRACKET_NAMES[b] || String(b + 1);
+    const koRounds = Math.ceil(Math.log2(Math.max(2, tPerBkt)));
+    const hint     = tPerBkt === 2 ? 'Final only'
+                   : tPerBkt === 4 ? 'SF + Final'
+                   : tPerBkt === 8 ? 'QF → SF → Final'
+                   : `${tPerBkt} teams`;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+      <span style="min-width:52px;font-size:12px;color:var(--text2)">Pos ${posLabel}</span>
+      <span style="font-size:11px;color:rgba(255,255,255,.2)">──▶</span>
+      <span style="font-size:12px">${icon}</span>
+      <span style="font-size:12px;color:var(--text);font-weight:600">Bracket ${name}</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--text2)">${hint}</span>
+    </div>`;
+  });
+
+  const concurrentNote = phases > 1
+    ? `<div style="font-size:11px;color:var(--green);margin-top:8px">✓ All ${phases} brackets run concurrently</div>`
+    : '';
+
+  document.getElementById('bracket-preview').innerHTML =
+    `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+      ${rows.join('')}
+      ${concurrentNote}
+    </div>`;
+
+  // Update header badge (just show phase count, not the raw number)
+  document.getElementById('v-spots').textContent = `${phases} phase${phases > 1 ? 's' : ''}`;
+}
+
+function setTpg(val) {
+  state.tpg = val;
+  updateTpgChips(); // also refreshes spots chips
+  render();
+}
+
+function setSpots(val) {
+  state.spots = val;
+  updateSpotsChips();
+  render();
+}
+
+// ── Calculation engine ─────────────────────────────────
+function calc() {
+  const { teams, pitches, match, extra } = state;
+  const brk = state.break;
+  const tpg  = clamp(state.tpg, 2, teams);
+  const spots = clamp(state.spots, 1, tpg);
+
+  const groups   = Math.max(1, Math.round(teams / tpg));
+  const actualTpg = Math.ceil(teams / groups);
+  const gamesPerGrp = actualTpg*(actualTpg-1)/2;
+  const totalGrpGames = groups * gamesPerGrp;
+
+  // Group stage slots (theoretical minimum)
+  const maxSimulPerGroup = Math.floor(actualTpg/2);
+  const maxPerSlot = pitches; // upper bound from pitches
+  const groupSlots = Math.max(actualTpg-1, Math.ceil(totalGrpGames/pitches));
+  const groupDur   = groupSlots*match + (groupSlots-1)*brk;
+
+  // Knockout structure
+  const brackets     = Math.max(1, Math.floor(actualTpg / spots));
+  const tPerBracket  = groups * spots;
+  const koRounds     = Math.max(1, Math.ceil(Math.log2(tPerBracket)));
+
+  const koRoundData = [];
+  for (let r=1; r<=koRounds; r++) {
+    const games = brackets * Math.max(1, Math.round(tPerBracket / Math.pow(2,r)));
+    const slots  = Math.ceil(games/pitches);
+    const dur    = slots*match + Math.max(0,slots-1)*brk;
+    const label  = r===koRounds ? 'final' : r===koRounds-1 ? 'sf' : 'qf';
+    koRoundData.push({ round:r, games, slots, dur, label });
+  }
+
+  const koDur = koRoundData.reduce((s,d)=>s+d.dur,0) + (koRounds-1)*extra;
+  const totalDur = groupDur + extra + koDur;
+
+  return {
+    groups, actualTpg, gamesPerGrp, totalGrpGames,
+    groupSlots, groupDur,
+    brackets, tPerBracket, koRounds, koRoundData, koDur,
+    totalDur, pitches, match, brk, extra, spots,
+    totalKoGames: koRoundData.reduce((s,d)=>s+d.games,0),
+    totalGames: totalGrpGames + koRoundData.reduce((s,d)=>s+d.games,0),
+    peakPitches: Math.min(pitches, totalGrpGames)
+  };
+}
+
+// ── Render ─────────────────────────────────────────────
+function render() {
+  const d = calc();
+  renderStats(d);
+  renderStructure(d);
+  renderRefs(d);
+  renderTimeline(d);
+  renderPitchMap(d);
+  renderPhaseTable(d);
+  renderPitchDiagram(d);
+  renderBracket(d);
+}
+
+// ── Stats cards ────────────────────────────────────────
+function renderStats(d) {
+  const startTime = document.getElementById('startTime').value;
+  const endTime   = addMinutes(startTime, d.totalDur);
+  document.getElementById('s-total').textContent = fmtMin(d.totalDur);
+  document.getElementById('s-total-sub').textContent = `${startTime} → ${endTime}`;
+  document.getElementById('s-games').textContent = d.totalGames;
+  document.getElementById('s-games-sub').textContent = `${d.totalGrpGames} group · ${d.totalKoGames} knockout`;
+  document.getElementById('s-group').textContent = fmtMin(d.groupDur);
+  document.getElementById('s-group-sub').textContent = `${d.groupSlots} slots across ${d.groups} groups`;
+  document.getElementById('s-ko').textContent = fmtMin(d.koDur);
+  document.getElementById('s-ko-sub').textContent = `${d.koRounds} rounds · ${d.brackets} brackets`;
+}
+
+// ── Structure panel ────────────────────────────────────
+function renderStructure(d) {
+  const chips = Array.from({length:d.groups},(_,i)=>`<span class="chip" style="background:${GROUP_COLOURS[i%GROUP_COLOURS.length]}22;color:${GROUP_COLOURS[i%GROUP_COLOURS.length]};border:1px solid ${GROUP_COLOURS[i%GROUP_COLOURS.length]}44">Group ${String.fromCharCode(65+i)}</span>`).join('');
+  document.getElementById('structure-text').innerHTML = `
+    <div class="group-chips">${chips}</div>
+    <div style="font-size:13px;line-height:1.8;color:var(--text2)">
+      <b style="color:var(--text)">${d.groups} groups</b> of <b style="color:var(--text)">${d.actualTpg} teams</b> each<br>
+      <b style="color:var(--text)">${d.gamesPerGrp}</b> games per group · <b style="color:var(--text)">${d.totalGrpGames}</b> total group games<br>
+      <b style="color:var(--text)">${d.brackets}</b> knockout brackets · <b style="color:var(--text)">${d.tPerBracket}</b> teams each<br>
+      <b style="color:var(--text)">${d.spots}</b> position${d.spots>1?'s':''} per group per bracket · all brackets run concurrently
+    </div>`;
+}
+
+// ── Refs panel ─────────────────────────────────────────
+function renderRefs(d) {
+  const min  = d.pitches;
+  const rec  = Math.ceil(d.pitches * 4/3);
+  const cmft = Math.ceil(d.pitches * 3/2);
+  document.getElementById('refs-text').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+      ${[['Minimum',min,'var(--red)'],['Recommended',rec,'var(--green)'],['Comfortable',cmft,'var(--blue)']].map(([l,v,c])=>`
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 4px">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:4px">${l}</div>
+          <div style="font-size:22px;font-weight:800;color:${c}">${v}</div>
+        </div>`).join('')}
+    </div>
+    <div class="note" style="margin-top:8px">Rotate every 2–3 slots · 1 ref per active pitch · no assistants needed at youth level</div>`;
+}
+
+// ── Timeline SVG ───────────────────────────────────────
+function renderTimeline(d) {
+  const startTime = document.getElementById('startTime').value;
+  const svg = document.getElementById('timeline');
+  const W = svg.parentElement.clientWidth || 700;
+  const H = 136;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('height', H);
+
+  const PL = 52, PR = 14;
+  const BAR_T = 48, BAR_H = 38, BAR_B = BAR_T + BAR_H;
+  const plotW = W - PL - PR;
+  const total = d.totalDur;
+  const px = m => PL + (m / total) * plotW;
+
+  // ── Build flat event list (matches + explicit gaps) ──
+  const evs = [];
+  let t = 0;
+
+  const grpAlloc = computeGroupAlloc(d.groups, d.pitches, d.gamesPerGrp, d.actualTpg);
+
+  for (let s = 0; s < d.groupSlots; s++) {
+    const batchIdx   = s % grpAlloc.batches;
+    const grpStart   = (batchIdx * grpAlloc.gps) % d.groups;
+    const grpNames   = Array.from({length: grpAlloc.gps},
+      (_,i) => String.fromCharCode(65 + (grpStart + i) % d.groups)).join(' & ');
+    evs.push({ t, dur: d.match, kind:'match', phase:'group', slot: s,
+               tip:`Group Stage · Slot ${s + 1} of ${d.groupSlots}|Groups: ${grpNames}  ·  %S → %E  (${d.match}m)` });
+    t += d.match;
+    if (s < d.groupSlots - 1) {
+      evs.push({ t, dur: d.brk, kind:'gap-small',
+                 tip:`Match break|%S → %E  (${d.brk} min)` });
+      t += d.brk;
+    }
+  }
+
+  evs.push({ t, dur: d.extra, kind:'gap-major', label:`${d.extra}m · Standings`,
+             tip:`Standings break|%S → %E  (${d.extra} min)  ·  Working out group tables` });
+  t += d.extra;
+
+  d.koRoundData.forEach((rd, ri) => {
+    if (ri > 0) {
+      evs.push({ t, dur: d.extra, kind:'gap-major', label:`${d.extra}m`,
+                 tip:`Round break|%S → %E  (${d.extra} min)` });
+      t += d.extra;
+    }
+    const rName = rd.label==='final' ? 'Final' : rd.label==='sf' ? 'Semi-Final' : 'Quarter-Final';
+    for (let s = 0; s < rd.slots; s++) {
+      evs.push({ t, dur: d.match, kind:'match', phase:'ko', koLabel: rd.label, slot: s,
+                 tip:`${rName} · Slot ${s + 1} of ${rd.slots}|%S → %E  (${d.match}m)  ·  ${rd.games} games  ·  ${d.brackets} bracket${d.brackets>1?'s':''}` });
+      t += d.match;
+      if (s < rd.slots - 1) {
+        evs.push({ t, dur: d.brk, kind:'gap-small',
+                   tip:`Match break|%S → %E  (${d.brk} min)` });
+        t += d.brk;
+      }
+    }
+  });
+
+  // ── Colour helper ──
+  const evCol = ev => {
+    if (ev.phase === 'group') return GROUP_COLOURS[ev.slot % d.groups % GROUP_COLOURS.length];
+    if (ev.koLabel === 'qf')  return KO_COLOURS.qf;
+    if (ev.koLabel === 'sf')  return KO_COLOURS.sf;
+    return KO_COLOURS.final;
+  };
+
+  let html = '';
+
+  // ── Draw events ──
+  evs.forEach(ev => {
+    const x  = +px(ev.t).toFixed(1);
+    const w  = Math.max(1.5, +(ev.dur / total * plotW).toFixed(1));
+    const sT = addMinutes(startTime, ev.t);
+    const eT = addMinutes(startTime, ev.t + ev.dur);
+    const tip = (ev.tip || '').replace('%S', sT).replace('%E', eT);
+    const cy  = BAR_T + BAR_H / 2;
+
+    if (ev.kind === 'match') {
+      const col = evCol(ev);
+      html += `<rect x="${x}" y="${BAR_T}" width="${w}" height="${BAR_H}" rx="3"
+        fill="${col}" opacity=".88" data-tip="${tip}" class="tl-seg"/>`;
+
+    } else if (ev.kind === 'gap-small') {
+      // Dark sliver between matches
+      html += `<rect x="${x}" y="${BAR_T}" width="${w}" height="${BAR_H}"
+        fill="rgba(0,0,0,.55)" data-tip="${tip}" class="tl-seg"/>`;
+      // Tiny duration label above the bar (if wide enough)
+      if (w >= 9) {
+        html += `<text x="${x + w/2}" y="${BAR_T - 4}" text-anchor="middle"
+          fill="rgba(255,255,255,.38)" font-size="8.5" font-family="system-ui">${ev.dur}m</text>`;
+      }
+
+    } else if (ev.kind === 'gap-major') {
+      // Dim block
+      html += `<rect x="${x}" y="${BAR_T}" width="${w}" height="${BAR_H}" rx="3"
+        fill="rgba(255,255,255,.07)" data-tip="${tip}" class="tl-seg"/>`;
+
+      if (w > 55) {
+        // ←——— label ———→  arrow annotation
+        const ASIZE = 5, ax = x + 9, bx = x + w - 9;
+        html += `<line x1="${ax}" y1="${cy}" x2="${bx}" y2="${cy}"
+          stroke="rgba(255,255,255,.38)" stroke-width="1.2"/>`;
+        html += `<polygon points="${ax},${cy} ${ax+ASIZE},${cy-ASIZE*.55} ${ax+ASIZE},${cy+ASIZE*.55}"
+          fill="rgba(255,255,255,.38)"/>`;
+        html += `<polygon points="${bx},${cy} ${bx-ASIZE},${cy-ASIZE*.55} ${bx-ASIZE},${cy+ASIZE*.55}"
+          fill="rgba(255,255,255,.38)"/>`;
+        html += `<text x="${x + w/2}" y="${cy - 7}" text-anchor="middle"
+          fill="rgba(255,255,255,.68)" font-size="10" font-weight="600"
+          font-family="system-ui">${ev.label}</text>`;
+      } else if (w > 14) {
+        html += `<text x="${x + w/2}" y="${cy + 4}" text-anchor="middle"
+          fill="rgba(255,255,255,.5)" font-size="9" font-family="system-ui">${ev.dur}m</text>`;
+      }
+    }
+  });
+
+  // ── Time axis tick marks + labels ──
+  const interval = total <= 90 ? 10 : total <= 180 ? 15 : total <= 300 ? 30 : 60;
+  for (let m = 0; m <= total; m += interval) {
+    const x = +px(m).toFixed(1);
+    html += `<line x1="${x}" y1="${BAR_T - 3}" x2="${x}" y2="${BAR_B + 3}"
+      stroke="rgba(255,255,255,.13)" stroke-width="1"/>`;
+    html += `<text x="${x}" y="${BAR_T - 9}" text-anchor="middle"
+      fill="#90a4ae" font-size="10" font-family="system-ui">${addMinutes(startTime, m)}</text>`;
+  }
+  // End label (pinned to right edge)
+  const endX = +px(total).toFixed(1);
+  html += `<text x="${endX}" y="${BAR_T - 9}" text-anchor="end"
+    fill="#00e676" font-size="10" font-weight="600"
+    font-family="system-ui">${addMinutes(startTime, total)}</text>`;
+
+  // ── Phase labels below bar ──
+  const phaseBlocks = [{t:0, dur:d.groupDur, label:'Group Stage', col:'#00e676'}];
+  let kt = d.groupDur + d.extra;
+  d.koRoundData.forEach((rd, ri) => {
+    if (ri > 0) kt += d.extra;
+    const lbl = rd.label==='final'?'Finals':rd.label==='sf'?'Semi-Finals':'Quarter-Finals';
+    phaseBlocks.push({t:kt, dur:rd.dur, label:lbl, col:KO_COLOURS[rd.label]});
+    kt += rd.dur;
+  });
+  phaseBlocks.forEach(b => {
+    const x1 = px(b.t), x2 = px(b.t + b.dur), cx = (x1 + x2) / 2;
+    if (x2 - x1 > 32)
+      html += `<text x="${cx.toFixed(1)}" y="${H - 5}" text-anchor="middle"
+        fill="${b.col}" font-size="10" font-weight="600" font-family="system-ui">${b.label}</text>`;
+  });
+
+  // ── Legend (top-left) ──
+  const legItems = [
+    {col: GROUP_COLOURS[0], label:'Group matches'},
+    {col: KO_COLOURS.qf,    label:'Quarter-finals'},
+    {col: KO_COLOURS.sf,    label:'Semi-finals'},
+    {col: KO_COLOURS.final, label:'Finals'},
+  ];
+  let lx = PL;
+  legItems.forEach(li => {
+    html += `<rect x="${lx}" y="10" width="10" height="10" rx="2" fill="${li.col}"/>`;
+    html += `<text x="${lx + 14}" y="19" fill="#90a4ae" font-size="10" font-family="system-ui">${li.label}</text>`;
+    lx += 87;
+  });
+
+  svg.innerHTML = html;
+
+  // ── Tooltip events (attached after innerHTML) ──
+  const tipEl = document.getElementById('tooltip');
+  svg.querySelectorAll('[data-tip]').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      const [title, detail] = (el.dataset.tip || '').split('|');
+      tipEl.innerHTML =
+        `<div style="font-weight:700;font-size:13px;margin-bottom:5px;color:#eceff1">${title}</div>` +
+        `<div style="color:#90a4ae;font-size:12px;line-height:1.5">${(detail||'').replace(/·/g,'<span style="opacity:.4"> · </span>')}</div>`;
+      tipEl.style.display = 'block';
+    });
+    el.addEventListener('mousemove', e => {
+      tipEl.style.left = (e.clientX + 15) + 'px';
+      tipEl.style.top  = Math.max(8, e.clientY - 64) + 'px';
+    });
+    el.addEventListener('mouseleave', () => { tipEl.style.display = 'none'; });
+  });
+
+  document.getElementById('timeline-note').textContent =
+    `Kick-off ${startTime} · Finish ${addMinutes(startTime, total)} · Total ${fmtMin(total)}  ·  Hover over any bar for exact times`;
+}
+
+// ── Pitch allocation map ────────────────────────────────
+function renderPitchMap(d) {
+  const svg = document.getElementById('pitch-map');
+  const CELL_W = 22, CELL_H = 26, GAP = 2;
+  const LABEL_W = 56, TOP = 20;
+  const totalSlots = d.groupSlots + d.koRoundData.reduce((s,r)=>s+r.slots,0);
+
+  const W = LABEL_W + totalSlots*(CELL_W+GAP) + 8;
+  const H = TOP + d.pitches*(CELL_H+GAP) + 4;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.setAttribute('width', Math.min(W, (document.getElementById('pitch-map-wrap').clientWidth||800)));
+  svg.setAttribute('height', H);
+
+  let html = '';
+
+  // Column headers (slot numbers)
+  let col = 0;
+  for(let s=0;s<d.groupSlots;s++,col++){
+    const x=LABEL_W+col*(CELL_W+GAP);
+    html+=`<text x="${x+CELL_W/2}" y="14" text-anchor="middle" fill="#546e7a" font-size="9" font-family="system-ui">${s+1}</text>`;
+  }
+  d.koRoundData.forEach(rd=>{
+    for(let s=0;s<rd.slots;s++,col++){
+      const x=LABEL_W+col*(CELL_W+GAP);
+      const lbl=rd.label==='final'?'F':rd.label==='sf'?'S':'Q';
+      html+=`<text x="${x+CELL_W/2}" y="14" text-anchor="middle" fill="${KO_COLOURS[rd.label]}" font-size="9" font-weight="700" font-family="system-ui">${lbl}${s+1}</text>`;
+    }
+  });
+
+  // Compute correct pitch→group allocation once
+  const grpAlloc = computeGroupAlloc(d.groups, d.pitches, d.gamesPerGrp, d.actualTpg);
+
+  // Rows (pitches)
+  for(let p=0; p<d.pitches; p++){
+    const y = TOP + p*(CELL_H+GAP);
+    html+=`<text x="${LABEL_W-6}" y="${y+CELL_H/2+4}" text-anchor="end" fill="#546e7a" font-size="10" font-family="system-ui">P${p+1}</text>`;
+
+    // Group stage columns
+    col=0;
+    for(let s=0;s<d.groupSlots;s++,col++){
+      const groupIdx = groupForPitch(s, p, grpAlloc, d.groups);
+      const x=LABEL_W+col*(CELL_W+GAP);
+      if (groupIdx === -1) {
+        // Idle pitch this slot
+        html+=`<rect x="${x}" y="${y}" width="${CELL_W}" height="${CELL_H}" rx="3" fill="rgba(255,255,255,.05)"/>`;
+        html+=`<text x="${x+CELL_W/2}" y="${y+CELL_H/2+4}" text-anchor="middle" fill="rgba(255,255,255,.2)" font-size="9" font-family="system-ui">—</text>`;
+      } else {
+        const col_c = GROUP_COLOURS[groupIdx % GROUP_COLOURS.length];
+        html+=`<rect x="${x}" y="${y}" width="${CELL_W}" height="${CELL_H}" rx="3" fill="${col_c}" opacity=".75"/>`;
+        html+=`<text x="${x+CELL_W/2}" y="${y+CELL_H/2+4}" text-anchor="middle" fill="white" font-size="9" font-weight="700" font-family="system-ui">${String.fromCharCode(65+groupIdx)}</text>`;
+      }
+    }
+
+    // KO columns
+    d.koRoundData.forEach(rd=>{
+      for(let s=0;s<rd.slots;s++,col++){
+        const x=LABEL_W+col*(CELL_W+GAP);
+        const gameIdx=s*d.pitches+p;
+        const active = gameIdx < rd.games;
+        const cc = active ? KO_COLOURS[rd.label] : 'rgba(255,255,255,.05)';
+        html+=`<rect x="${x}" y="${y}" width="${CELL_W}" height="${CELL_H}" rx="3" fill="${cc}" opacity="${active?.8:.4}"/>`;
+        if(active){
+          const lbl=rd.label==='final'?'F':rd.label==='sf'?'S':'Q';
+          html+=`<text x="${x+CELL_W/2}" y="${y+CELL_H/2+4}" text-anchor="middle" fill="white" font-size="9" font-weight="700" font-family="system-ui">${lbl}</text>`;
+        }
+      }
+    });
+  }
+
+  // Phase separator lines
+  col=d.groupSlots;
+  const sx=LABEL_W+col*(CELL_W+GAP)-GAP/2;
+  html+=`<line x1="${sx}" y1="${TOP-2}" x2="${sx}" y2="${H-2}" stroke="#00e676" stroke-width="1.5" stroke-dasharray="4,3" opacity=".6"/>`;
+
+  let kcol=d.groupSlots;
+  d.koRoundData.forEach((rd,ri)=>{
+    kcol+=rd.slots;
+    if(ri<d.koRoundData.length-1){
+      const kx=LABEL_W+kcol*(CELL_W+GAP)-GAP/2;
+      html+=`<line x1="${kx}" y1="${TOP-2}" x2="${kx}" y2="${H-2}" stroke="rgba(255,255,255,.2)" stroke-width="1" stroke-dasharray="3,3"/>`;
+    }
+  });
+
+  svg.innerHTML=html;
+}
+
+// ── Phase breakdown table ──────────────────────────────
+function renderPhaseTable(d) {
+  const startTime = document.getElementById('startTime').value;
+  let t = 0;
+  const rows = [];
+
+  const grpEnd = addMinutes(startTime, d.groupDur);
+  rows.push({
+    label:'Group Stage',
+    detail:`${d.groupSlots} slots · ${d.groups} groups`,
+    dur:fmtMin(d.groupDur),
+    start:startTime,
+    end:grpEnd,
+    colour:'var(--green)'
+  });
+  t += d.groupDur + d.extra;
+
+  d.koRoundData.forEach((rd,ri)=>{
+    if(ri>0) t+=d.extra;
+    const s=addMinutes(startTime,t), e=addMinutes(startTime,t+rd.dur);
+    const lbl=rd.label==='final'?'Finals':rd.label==='sf'?'Semi-Finals':'Quarter-Finals';
+    rows.push({
+      label:lbl,
+      detail:`${rd.slots} slots · ${rd.games} games · ${d.brackets} brackets`,
+      dur:fmtMin(rd.dur),
+      start:s, end:e,
+      colour:KO_COLOURS[rd.label]
+    });
+    t+=rd.dur;
+  });
+
+  document.getElementById('phase-table').innerHTML = `
+    <thead><tr>
+      <th>Phase</th><th>Detail</th><th>Start</th><th>End</th><th>Duration</th>
+    </tr></thead>
+    <tbody>
+    ${rows.map(r=>`<tr>
+      <td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${r.colour};display:inline-block"></span>${r.label}</span></td>
+      <td style="color:var(--text2)">${r.detail}</td>
+      <td style="font-variant-numeric:tabular-nums">${r.start}</td>
+      <td style="font-variant-numeric:tabular-nums">${r.end}</td>
+      <td style="font-weight:700">${r.dur}</td>
+    </tr>`).join('')}
+    </tbody>`;
+}
+
+// ── Football pitch diagram ─────────────────────────────
+function setPitchFormat(val) {
+  state.pitchFormat = val;
+  updatePitchFormatChips();
+  render();
+}
+
+function updatePitchFormatChips() {
+  const opts = [
+    { v:5,  label:'5-a-side', sub:'4 quarters' },
+    { v:7,  label:'7-a-side', sub:'3 thirds'   },
+    { v:9,  label:'9-a-side', sub:'2 halves'   },
+    { v:11, label:'11-a-side',sub:'full pitch'  },
+  ];
+  document.getElementById('pitch-format-chips').innerHTML = opts.map(o =>
+    `<button class="chip-btn${o.v === state.pitchFormat ? ' active' : ''}" onclick="setPitchFormat(${o.v})"
+      style="display:flex;flex-direction:column;align-items:center;padding:5px 11px;line-height:1.3">
+      <span style="font-size:13px;font-weight:700">${o.label}</span>
+      <span style="font-size:10px;opacity:.65">${o.sub}</span>
+    </button>`
+  ).join('');
+}
+
+function renderPitchDiagram(d) {
+  const svg = document.getElementById('pitch-diagram');
+  const W=210, H=136, pad=8;
+  const pw = W - pad*2, ph = H - pad*2;
+  const fmt = state.pitchFormat;
+
+  const PITCH_INFO = {
+    5:  { label:'5-a-side', dims:'40×30m',  subs:4 },
+    7:  { label:'7-a-side', dims:'55×40m',  subs:3 },
+    9:  { label:'9-a-side', dims:'70×46m',  subs:2 },
+    11: { label:'11-a-side',dims:'100×64m', subs:1 },
+  };
+  const info = PITCH_INFO[fmt] || PITCH_INFO[11];
+
+  const LINE  = 'rgba(255,255,255,.85)';
+  const DIM   = 'rgba(255,255,255,.5)';
+  const DIV   = 'rgba(255,230,0,.85)';   // yellow divider lines
+  const DIV_F = 'rgba(255,230,0,.08)';   // yellow tint fill on alt sections
+  const TINT  = ['rgba(255,255,255,.04)', 'rgba(0,0,0,.06)'];
+
+  // Mini-pitch with goals on LEFT/RIGHT (for landscape strips — 5-a-side quarters)
+  function miniPitch(x1, y1, x2, y2, idx) {
+    const mx=(x1+x2)/2, my=(y1+y2)/2, mw=x2-x1, mh=y2-y1;
+    const r = Math.min(mw, mh) * 0.14;
+    const gh = mh * 0.38;
+    const gd = 4;
+    const gy1 = my - gh/2;
+    const out = [];
+    out.push(`<rect x="${x1}" y="${y1}" width="${mw}" height="${mh}" fill="${TINT[idx%2]}"/>`);
+    out.push(`<rect x="${x1-gd}" y="${gy1}" width="${gd}" height="${gh}" fill="rgba(255,255,255,.12)" stroke="${DIM}" stroke-width=".7"/>`);
+    out.push(`<rect x="${x2}"    y="${gy1}" width="${gd}" height="${gh}" fill="rgba(255,255,255,.12)" stroke="${DIM}" stroke-width=".7"/>`);
+    out.push(`<circle cx="${mx}" cy="${my}" r="${r}" fill="none" stroke="${DIM}" stroke-width=".8"/>`);
+    out.push(`<circle cx="${mx}" cy="${my}" r="1.4" fill="${DIM}"/>`);
+    out.push(`<line x1="${mx}" y1="${y1}" x2="${mx}" y2="${y2}" stroke="${DIM}" stroke-width=".7" stroke-dasharray="3 2"/>`);
+    out.push(`<text x="${mx}" y="${y2-3}" text-anchor="middle" fill="rgba(255,255,255,.35)" font-size="7.5" font-family="system-ui">Pitch ${idx+1}</text>`);
+    return out.join('');
+  }
+
+  // Mini-pitch with goals on TOP/BOTTOM (for portrait columns — 7 and 9-a-side)
+  function miniPitchCol(x1, y1, x2, y2, idx) {
+    const mx=(x1+x2)/2, my=(y1+y2)/2, mw=x2-x1, mh=y2-y1;
+    const r = Math.min(mw, mh) * 0.14;
+    const gw = mw * 0.42; // goal width across short (column) axis
+    const gd = 4;
+    const gx1 = mx - gw/2;
+    const out = [];
+    out.push(`<rect x="${x1}" y="${y1}" width="${mw}" height="${mh}" fill="${TINT[idx%2]}"/>`);
+    // Top goal
+    out.push(`<rect x="${gx1}" y="${y1-gd}" width="${gw}" height="${gd}" fill="rgba(255,255,255,.12)" stroke="${DIM}" stroke-width=".7"/>`);
+    // Bottom goal
+    out.push(`<rect x="${gx1}" y="${y2}"    width="${gw}" height="${gd}" fill="rgba(255,255,255,.12)" stroke="${DIM}" stroke-width=".7"/>`);
+    out.push(`<circle cx="${mx}" cy="${my}" r="${r}" fill="none" stroke="${DIM}" stroke-width=".8"/>`);
+    out.push(`<circle cx="${mx}" cy="${my}" r="1.4" fill="${DIM}"/>`);
+    // Centre line horizontal
+    out.push(`<line x1="${x1}" y1="${my}" x2="${x2}" y2="${my}" stroke="${DIM}" stroke-width=".7" stroke-dasharray="3 2"/>`);
+    out.push(`<text x="${mx}" y="${y2-3}" text-anchor="middle" fill="rgba(255,255,255,.35)" font-size="7.5" font-family="system-ui">Pitch ${idx+1}</text>`);
+    return out.join('');
+  }
+
+  let html = [];
+
+  // Background + stripes
+  html.push(`<rect width="${W}" height="${H}" fill="#1a5c2a"/>`);
+  for (let i=0;i<7;i++) {
+    html.push(`<rect x="${pad+(i/7)*pw}" y="${pad}" width="${pw/14}" height="${ph}" fill="rgba(0,0,0,.07)"/>`);
+  }
+
+  if (fmt === 11) {
+    // ── Full pitch ──────────────────────────────────────────
+    const paw=50, pah=70, gaw=18, gah=30;
+    html.push(
+      `<rect x="${pad}" y="${pad}" width="${pw}" height="${ph}" fill="none" stroke="${LINE}" stroke-width="1.2" rx="1"/>`,
+      `<line x1="${W/2}" y1="${pad}" x2="${W/2}" y2="${H-pad}" stroke="${LINE}" stroke-width="1.2"/>`,
+      `<circle cx="${W/2}" cy="${H/2}" r="${ph*0.18}" fill="none" stroke="${LINE}" stroke-width="1.2"/>`,
+      `<circle cx="${W/2}" cy="${H/2}" r="2" fill="rgba(255,255,255,.9)"/>`,
+      // penalty boxes
+      `<rect x="${pad}" y="${pad+(ph-pah*ph/100)/2}" width="${paw*pw/100}" height="${pah*ph/100}" fill="none" stroke="${DIM}" stroke-width="1"/>`,
+      `<rect x="${pad}" y="${pad+(ph-gah*ph/100)/2}" width="${gaw*pw/100}" height="${gah*ph/100}" fill="none" stroke="${DIM}" stroke-width="1"/>`,
+      `<rect x="${W-pad-paw*pw/100}" y="${pad+(ph-pah*ph/100)/2}" width="${paw*pw/100}" height="${pah*ph/100}" fill="none" stroke="${DIM}" stroke-width="1"/>`,
+      `<rect x="${W-pad-gaw*pw/100}" y="${pad+(ph-gah*ph/100)/2}" width="${gaw*pw/100}" height="${gah*ph/100}" fill="none" stroke="${DIM}" stroke-width="1"/>`,
+      // penalty spots
+      `<circle cx="${pad+paw*pw/100*0.55}" cy="${H/2}" r="1.5" fill="rgba(255,255,255,.8)"/>`,
+      `<circle cx="${W-pad-paw*pw/100*0.55}" cy="${H/2}" r="1.5" fill="rgba(255,255,255,.8)"/>`,
+      // corner arcs
+      `<path d="M${pad} ${pad+7} A7 7 0 0 0 ${pad+7} ${pad}" fill="none" stroke="${DIM}" stroke-width=".8"/>`,
+      `<path d="M${W-pad-7} ${pad} A7 7 0 0 0 ${W-pad} ${pad+7}" fill="none" stroke="${DIM}" stroke-width=".8"/>`,
+      `<path d="M${pad} ${H-pad-7} A7 7 0 0 0 ${pad+7} ${H-pad}" fill="none" stroke="${DIM}" stroke-width=".8"/>`,
+      `<path d="M${W-pad} ${H-pad-7} A7 7 0 0 0 ${W-pad-7} ${H-pad}" fill="none" stroke="${DIM}" stroke-width=".8"/>`,
+      // goals
+      `<rect x="${pad-5}" y="${pad+(ph-gah*ph/100)/2}" width="5" height="${gah*ph/100}" fill="rgba(255,255,255,.15)" stroke="${DIM}" stroke-width=".8"/>`,
+      `<rect x="${W-pad}" y="${pad+(ph-gah*ph/100)/2}" width="5" height="${gah*ph/100}" fill="rgba(255,255,255,.15)" stroke="${DIM}" stroke-width=".8"/>`,
+    );
+
+  } else if (fmt === 9) {
+    // ── 2 vertical halves (side by side) ───────────────────
+    const midX = W / 2;
+    html.push(miniPitchCol(pad,  pad, midX,  H-pad, 0));
+    html.push(miniPitchCol(midX, pad, W-pad, H-pad, 1));
+    // Outer boundary
+    html.push(`<rect x="${pad}" y="${pad}" width="${pw}" height="${ph}" fill="none" stroke="${LINE}" stroke-width="1.2" rx="1"/>`);
+    // Yellow divider
+    html.push(`<line x1="${midX}" y1="${pad}" x2="${midX}" y2="${H-pad}" stroke="${DIV}" stroke-width="2" stroke-dasharray="6 3"/>`);
+    html.push(`<text x="${midX}" y="${H/2-4}" text-anchor="middle" fill="${DIV}" font-size="7" font-family="system-ui" font-weight="700">÷ 2</text>`);
+
+  } else if (fmt === 7) {
+    // ── 3 vertical thirds (side by side) ───────────────────
+    const x1 = pad + pw/3, x2 = pad + 2*pw/3;
+    html.push(miniPitchCol(pad, pad, x1,    H-pad, 0));
+    html.push(miniPitchCol(x1,  pad, x2,    H-pad, 1));
+    html.push(miniPitchCol(x2,  pad, W-pad, H-pad, 2));
+    // Outer boundary
+    html.push(`<rect x="${pad}" y="${pad}" width="${pw}" height="${ph}" fill="none" stroke="${LINE}" stroke-width="1.2" rx="1"/>`);
+    // Yellow dividers
+    html.push(`<line x1="${x1}" y1="${pad}" x2="${x1}" y2="${H-pad}" stroke="${DIV}" stroke-width="2" stroke-dasharray="6 3"/>`);
+    html.push(`<line x1="${x2}" y1="${pad}" x2="${x2}" y2="${H-pad}" stroke="${DIV}" stroke-width="2" stroke-dasharray="6 3"/>`);
+    html.push(`<text x="${x1}" y="${H/2-4}" text-anchor="middle" fill="${DIV}" font-size="7" font-family="system-ui" font-weight="700">÷ 3</text>`);
+
+  } else if (fmt === 5) {
+    // ── 4 quarters (2×2) ───────────────────────────────────
+    const midX = W / 2, midY = H / 2;
+    html.push(miniPitch(pad,  pad,  midX, midY,  0));
+    html.push(miniPitch(midX, pad,  W-pad, midY, 1));
+    html.push(miniPitch(pad,  midY, midX,  H-pad, 2));
+    html.push(miniPitch(midX, midY, W-pad, H-pad, 3));
+    // Outer boundary
+    html.push(`<rect x="${pad}" y="${pad}" width="${pw}" height="${ph}" fill="none" stroke="${LINE}" stroke-width="1.2" rx="1"/>`);
+    // Yellow dividers
+    html.push(`<line x1="${midX}" y1="${pad}" x2="${midX}" y2="${H-pad}" stroke="${DIV}" stroke-width="2" stroke-dasharray="6 3"/>`);
+    html.push(`<line x1="${pad}" y1="${midY}" x2="${W-pad}" y2="${midY}" stroke="${DIV}" stroke-width="2" stroke-dasharray="6 3"/>`);
+    html.push(`<text x="${W/2+2}" y="${midY-3}" text-anchor="middle" fill="${DIV}" font-size="7" font-family="system-ui" font-weight="700">÷ 4 quarters</text>`);
+  }
+
+  // Format label bottom
+  html.push(`<text x="${W/2}" y="${H-1.5}" text-anchor="middle" fill="rgba(255,255,255,.4)" font-size="8.5" font-family="system-ui">${info.label} · ${info.dims} · ${info.subs} pitch${info.subs>1?'es':''} per full-size</text>`);
+
+  svg.innerHTML = html.join('');
+  document.getElementById('pitch-dims').textContent = `${info.label} · approx ${info.dims} per pitch · ${d.pitches} pitches in use`;
+}
+
+// ── Knockout bracket ───────────────────────────────────
+function renderBracket(d) {
+  const svg = document.getElementById('bracket-svg');
+  const bracketLabels = d.koRoundData.map(rd=>
+    rd.label==='final'?'Final':rd.label==='sf'?'Semi-finals':'Quarter-finals'
+  );
+
+  const B = Math.min(d.brackets, 4); // draw max 4 brackets
+  const teamsBracket = d.tPerBracket;
+  const rounds = d.koRounds;
+
+  const BWIDTH = 200, BPAD = 20;
+  const W = B * BWIDTH + (B-1)*BPAD + 20;
+  const SLOT_H = 30, ROUND_W = 55;
+  const H = Math.max(120, teamsBracket * SLOT_H + 40);
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('width', Math.min(W, 900));
+  svg.setAttribute('height', H);
+
+  let html = '';
+
+  const bracketColours = ['#00c853','#448aff','#ff9100','#e040fb'];
+  const koColArr = [KO_COLOURS.qf, KO_COLOURS.sf, KO_COLOURS.final];
+
+  for(let b=0; b<B; b++){
+    const bx = b*(BWIDTH+BPAD) + 10;
+    const bLabel = `Bracket ${String.fromCharCode(69+b)}`; // E, F, G...
+    html+=`<text x="${bx+BWIDTH/2}" y="14" text-anchor="middle" fill="${bracketColours[b%bracketColours.length]}" font-size="11" font-weight="700" font-family="system-ui">${bLabel}</text>`;
+
+    for(let r=0; r<rounds; r++){
+      const teams = teamsBracket / Math.pow(2,r);
+      const games = teams/2;
+      const rx = bx + r*ROUND_W;
+      const slotHeight = H / teams;
+      const lbl = koColArr[Math.min(r, koColArr.length-1)];
+
+      // Round label
+      const rndLabel = r===0&&rounds>2?'QF':r===rounds-2?'SF':r===rounds-1?'Final':'R'+(r+1);
+      html+=`<text x="${rx+ROUND_W/2}" y="${H-4}" text-anchor="middle" fill="${lbl}" font-size="9" font-family="system-ui" opacity=".8">${rndLabel}</text>`;
+
+      for(let g=0; g<games; g++){
+        const y1 = (g*2)*slotHeight + slotHeight*0.3 + 16;
+        const y2 = (g*2+1)*slotHeight + slotHeight*0.3 + 16;
+        const mx = rx + ROUND_W - 4;
+        const my = (y1+y2)/2;
+
+        // Team slots
+        [y1,y2].forEach(y=>{
+          html+=`<rect x="${rx+2}" y="${y-8}" width="${ROUND_W-10}" height="16" rx="4" fill="${lbl}" opacity=".2" stroke="${lbl}" stroke-width=".6" stroke-opacity=".4"/>`;
+        });
+
+        // Connector lines
+        if(r < rounds-1){
+          html+=`<line x1="${mx}" y1="${y1}" x2="${mx}" y2="${y2}" stroke="${lbl}" stroke-width=".8" stroke-opacity=".4"/>`;
+          html+=`<line x1="${mx}" y1="${my}" x2="${mx+4}" y2="${my}" stroke="${lbl}" stroke-width=".8" stroke-opacity=".4"/>`;
+        }
+      }
+
+      // Winner box for final
+      if(r === rounds-1){
+        const cy = H/2 - 4 + 16;
+        html+=`<rect x="${rx+2}" y="${cy-10}" width="${ROUND_W-10}" height="20" rx="5" fill="${KO_COLOURS.final}" opacity=".35" stroke="${KO_COLOURS.final}" stroke-width="1"/>`;
+        html+=`<text x="${rx+2+(ROUND_W-10)/2}" y="${cy+5}" text-anchor="middle" fill="${KO_COLOURS.final}" font-size="10" font-weight="700" font-family="system-ui">🏆</text>`;
+      }
+    }
+  }
+
+  if(d.brackets > 4){
+    html+=`<text x="${W/2}" y="${H/2+5}" text-anchor="middle" fill="var(--text2)" font-size="11" font-family="system-ui">… +${d.brackets-4} more brackets</text>`;
+  }
+
+  svg.innerHTML = html;
+}
+
+// ── Group allocation helpers ───────────────────────────
+// Find optimal (groupsPerSlot, pitchesPerGroup) that minimises total slots.
+// groupsPerSlot must be a divisor of groups so rotation is even.
+function computeGroupAlloc(groups, pitches, gamesPerGroup, tpg) {
+  const maxPpg = Math.floor(tpg / 2); // max simultaneous games per group
+  let best = null, bestSlots = Infinity;
+  for (let gps = 1; gps <= groups; gps++) {
+    if (groups % gps !== 0) continue;          // must divide evenly
+    const ppg = Math.min(Math.floor(pitches / gps), maxPpg);
+    if (ppg < 1) continue;
+    const batches = groups / gps;              // how many batches rotate
+    const totalSlots = Math.ceil(gamesPerGroup / ppg) * batches;
+    if (totalSlots < bestSlots) {
+      bestSlots = totalSlots;
+      best = { gps, ppg, batches, pitchesUsed: ppg * gps };
+    }
+  }
+  return best || { gps: groups, ppg: 1, batches: 1, pitchesUsed: pitches };
+}
+
+// Returns group index (0-based) for a given slot + pitch, or -1 if idle.
+function groupForPitch(slot, pitch, alloc, groups) {
+  const { gps, ppg, batches, pitchesUsed } = alloc;
+  if (pitch >= pitchesUsed) return -1;
+  const batchIdx    = slot % batches;          // which batch of groups is active
+  const groupInBatch = Math.floor(pitch / ppg); // which group within that batch
+  return (batchIdx * gps + groupInBatch) % groups;
+}
+
+// ── Initial render ─────────────────────────────────────
+updateTpgChips();       // populates tpg + spots chip rows
+updatePitchFormatChips(); // populates pitch format chips
+render();
+window.addEventListener('resize', render);
+</script>
+</body>
+</html>
