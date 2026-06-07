@@ -2,7 +2,7 @@
 
 A single-page, browser-based tournament planning tool for youth football events.
 
-No installation, no server, no internet connection required — just open `tournament-planner.html` in Chrome.
+No installation, no server, no internet connection required — just open `football-tournament-planner.html` in Chrome.
 
 > Developed in conjunction with **[Woolton FC](https://www.wooltonfc.co.uk/)** and provided free of charge to the wider football community.
 
@@ -24,10 +24,10 @@ No installation, no server, no internet connection required — just open `tourn
 
 ### 1. Open the app
 
-Download or clone this repository, then open `tournament-planner.html` directly in Google Chrome:
+Download or clone this repository, then open `football-tournament-planner.html` directly in Google Chrome:
 
 ```
-File → Open File → tournament-planner.html
+File → Open File → football-tournament-planner.html
 ```
 
 No web server is needed. The file runs entirely in the browser.
