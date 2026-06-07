@@ -1,8 +1,10 @@
-# Woolton FC Tournament Planner
+# Tournament Planner
 
-A single-page, browser-based tournament planning tool built for **[Woolton FC](https://www.wooltonfc.co.uk/)** youth football tournaments.
+A single-page, browser-based tournament planning tool for youth football events.
 
 No installation, no server, no internet connection required — just open `tournament-planner.html` in Chrome.
+
+> Developed in conjunction with **[Woolton FC](https://www.wooltonfc.co.uk/)** and provided free of charge to the wider football community.
 
 ---
 
@@ -50,7 +52,7 @@ Use the controls on the left panel to set up your event:
 The **Knockout phase structure** control lets you run multiple concurrent knockout brackets from the same group stage:
 
 - With 4 groups of 6 and a band size of **2**: positions 1–2 go into Bracket E, positions 3–4 into Bracket F, positions 5–6 into Bracket G — every team enters a knockout, all three brackets run at the same time.
-- With a band size of **6**: all 6 positions from each group enter the same single bracket.
+- With a band size of **6**: all 6 positions from each group enter a single bracket.
 - The bracket preview below the chips shows the exact position-to-bracket mapping and round structure for each bracket.
 
 ### 4. Read the timeline
@@ -77,11 +79,11 @@ Yellow dashed lines show how the full-size pitch is divided. Each sub-pitch show
 
 ---
 
-## Example: Woolton FC Multi-Age Tournament
+## Example Setup
 
-A typical Woolton FC setup running two age groups simultaneously:
+A typical multi-age-group tournament running two age groups simultaneously:
 
-| Setting | Under 6s / 7s | Under 8s | Under 9s |
+| Setting | Age group A | Age group B | Age group C |
 |---|---|---|---|
 | Teams | 24 | 24 | 24 |
 | Pitches | 6 | 6 | 4 |
@@ -91,24 +93,16 @@ A typical Woolton FC setup running two age groups simultaneously:
 | Match length | 12 min | 12 min | 14 min |
 | Est. duration | ~3h 57m | ~3h 57m | ~5h 10m |
 
-With Under 6s and Under 7s running on separate sets of 6 pitches simultaneously, all 48 teams complete a full group stage and knockout on the same day.
+With two age groups sharing a site on separate sets of pitches, all 48 teams can complete a full group stage and knockout in a single day.
 
 ---
 
-## Intellectual Property
+## Acknowledgements
 
-This application was created for **[Woolton FC](https://www.wooltonfc.co.uk/)**, who retain the intellectual property rights. It is made freely available to the football community under the MIT licence (see below). Woolton FC are not responsible for any inaccuracies in tournament scheduling that may result from use of this tool.
+This tool was developed in conjunction with **[Woolton FC](https://www.wooltonfc.co.uk/)**, a community youth football club based in Liverpool. Woolton FC provided the real-world tournament requirements that shaped the feature set and have kindly made the application available free of charge to any club or organisation that finds it useful.
 
 ---
 
 ## Licence
 
-MIT License
-
-Copyright (c) 2025 Woolton FC
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+MIT — see [LICENSE](LICENSE) for full terms. Free to use, modify, and distribute with attribution.
